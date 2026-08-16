@@ -23,24 +23,27 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Header */
+/* Header — table layout like Pinboard for cross-browser reliability */
 #banner {
   padding: 12px 20px;
   background: #FEFEFE;
   border-bottom: 1px solid #C0C0C0;
-  min-height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  overflow: hidden;
+}
+
+#banner_table {
+  border: 0;
+  border-collapse: collapse;
+}
+
+#banner_table td {
+  vertical-align: middle;
+  padding: 0;
+  border: 0;
 }
 
 #logo {
-  display: flex;
-  align-items: baseline;
-  flex-shrink: 0;
   white-space: nowrap;
+  width: 1%;
 }
 
 #logo a:not(.banner_username) {
@@ -65,13 +68,10 @@ a:hover {
 }
 
 #top_menu {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  text-align: right;
   white-space: nowrap;
-  gap: 6px;
-  margin: 0;
-  line-height: 1;
+  width: 99%;
+  line-height: 1.4;
 }
 
 #top_menu a {
@@ -87,7 +87,8 @@ a:hover {
 
 #top_menu .menu_sep {
   color: #C0C0C0;
-  user-select: none;
+  display: inline;
+  white-space: nowrap;
 }
 
 /* Content layout */
@@ -112,15 +113,21 @@ a:hover {
 /* User navbar */
 .user_navbar {
   margin-top: 5px;
-  height: 25px;
-  position: relative;
   margin-bottom: 15px;
+  position: relative;
+  min-height: 70px;
 }
 
 .small_username {
-  position: absolute;
-  top: 30px;
+  display: block;
   color: #666;
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.bookmark_count_box {
+  display: block;
+  margin-bottom: 4px;
 }
 
 .bookmark_count {
@@ -141,13 +148,17 @@ a:hover {
 
 .source_filter {
   color: #C0C0C0;
-  margin-top: 5px;
+  margin-top: 4px;
+  white-space: nowrap;
+  line-height: 1.6;
 }
 
 .source_filter a,
 .filter {
   color: #666 !important;
   text-decoration: none;
+  display: inline !important;
+  white-space: nowrap;
 }
 
 .source_filter a:hover,
@@ -162,9 +173,8 @@ a:hover {
 
 .rss_linkbox {
   position: absolute;
-  top: 1px;
+  top: 0;
   right: 0;
-  margin-top: 9px;
 }
 
 .rss_link {

@@ -41,21 +41,22 @@ function renderPage(res, { title, body, user, activeNav }) {
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(title)} - Pinbook</title>
-  <link rel="stylesheet" href="/css/pinboard.css">
+  <link rel="stylesheet" href="/css/pinboard.css?v=3">
 </head>
 <body>
   <div id="banner">
-    <div id="logo">
-      <a href="/">pinbook</a>
-      <span>/</span>
-      <a href="/" class="banner_username">${escapeHtml(user.username)}</a>
-    </div>
-    <div id="top_menu">
-      <a href="/">bookmarks</a><span class="menu_sep">&middot;</span>
-      <a href="/add/">add</a><span class="menu_sep">&middot;</span>
-      <a href="/settings/">settings</a><span class="menu_sep">&middot;</span>
-      <a href="/api/docs">api</a>
-    </div>
+    <table id="banner_table" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td id="logo">
+          <a href="/">pinbook</a>
+          <span>/</span>
+          <a href="/" class="banner_username">${escapeHtml(user.username)}</a>
+        </td>
+        <td id="top_menu">
+          <a href="/">bookmarks</a><span class="menu_sep"> · </span><a href="/add/">add</a><span class="menu_sep"> · </span><a href="/settings/">settings</a><span class="menu_sep"> · </span><a href="/api/docs">api</a>
+        </td>
+      </tr>
+    </table>
   </div>
   <div id="content">
     ${body}
@@ -90,21 +91,22 @@ function renderSettingsPage(res, { title, tab, body, user }) {
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(title)} - Pinbook</title>
-  <link rel="stylesheet" href="/css/pinboard.css">
+  <link rel="stylesheet" href="/css/pinboard.css?v=3">
 </head>
 <body>
   <div id="banner">
-    <div id="logo">
-      <a href="/">pinbook</a>
-      <span>/</span>
-      <a href="/" class="banner_username">${escapeHtml(user.username)}</a>
-    </div>
-    <div id="top_menu">
-      <a href="/">bookmarks</a><span class="menu_sep">&middot;</span>
-      <a href="/add/">add</a><span class="menu_sep">&middot;</span>
-      <a href="/settings/">settings</a><span class="menu_sep">&middot;</span>
-      <a href="/api/docs">api</a>
-    </div>
+    <table id="banner_table" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td id="logo">
+          <a href="/">pinbook</a>
+          <span>/</span>
+          <a href="/" class="banner_username">${escapeHtml(user.username)}</a>
+        </td>
+        <td id="top_menu">
+          <a href="/">bookmarks</a><span class="menu_sep"> · </span><a href="/add/">add</a><span class="menu_sep"> · </span><a href="/settings/">settings</a><span class="menu_sep"> · </span><a href="/api/docs">api</a>
+        </td>
+      </tr>
+    </table>
   </div>
   <div id="content">
     <div id="settings_layout">
