@@ -11,6 +11,10 @@ const {
   importFromJson,
   parseTags,
   nowIso,
+  deleteAllBookmarks,
+  updateUserSettings,
+  regenerateApiToken,
+  exportBookmarks,
 } = require('../lib/db');
 
 const router = express.Router();
@@ -49,13 +53,69 @@ function renderPage(res, { title, body, user, activeNav }) {
     <div id="top_menu">
       <a href="/">bookmarks</a> &middot;
       <a href="/add/">add</a> &middot;
-      <a href="/import/">import</a> &middot;
       <a href="/settings/">settings</a> &middot;
       <a href="/api/docs">api</a>
     </div>
   </div>
   <div id="content">
     ${body}
+  </div>
+  <div id="footer">
+    <p>Pinbook &mdash; local Pinboard clone</p>
+  </div>
+</body>
+</html>`;
+  res.send(html);
+}
+
+function renderSettingsPage(res, { title, tab, body, user }) {
+  const tabs = [
+    { key: 'account', label: 'account' },
+    { key: 'privacy', label: 'privacy' },
+    { key: 'import', label: 'import' },
+    { key: 'export', label: 'export' },
+    { key: 'api', label: 'password / api' },
+    { key: 'danger', label: 'danger zone' },
+  ];
+
+  const sidebar = tabs
+    .map((t) => {
+      const cls = tab === t.key ? 'settings_nav_active' : 'settings_nav';
+      return `<p><a class="${cls}" href="/settings/${t.key}/">${t.label}</a></p>`;
+    })
+    .join('\n');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(title)} - Pinbook</title>
+  <link rel="stylesheet" href="/css/pinboard.css">
+</head>
+<body>
+  <div id="banner">
+    <div id="logo">
+      <a href="/">pinbook</a>
+      <span>/</span>
+      <a href="/" class="banner_username">${escapeHtml(user.username)}</a>
+    </div>
+    <div id="top_menu">
+      <a href="/">bookmarks</a> &middot;
+      <a href="/add/">add</a> &middot;
+      <a href="/settings/">settings</a> &middot;
+      <a href="/api/docs">api</a>
+    </div>
+  </div>
+  <div id="content">
+    <div id="settings_layout">
+      <div id="settings_sidebar">
+        <p class="settings_heading"><b>settings</b></p>
+        ${sidebar}
+      </div>
+      <div id="settings_main">
+        ${body}
+      </div>
+    </div>
   </div>
   <div id="footer">
     <p>Pinbook &mdash; local Pinboard clone</p>
@@ -158,6 +218,10 @@ router.get('/', (req, res) => {
 
   let bookmarks = listBookmarks(user.id, options);
 
+  if (user.privacy_lock && filter !== 'private') {
+    bookmarks = bookmarks.filter((b) => b.shared);
+  }
+
   if (q) {
     const lower = q.toLowerCase();
     bookmarks = bookmarks.filter(
@@ -211,7 +275,7 @@ router.get('/', (req, res) => {
       </p>
       ${bookmarkHtml || '<p>No bookmarks yet. <a href="/add/">Add one</a> or <a href="/import/">import from JSON</a>.</p>'}
       <div id="nextprev">
-        <a id="bulk_edit" href="/import/">import</a>
+        <a id="bulk_edit" href="/settings/import/">import</a>
       </div>
     </div>
     <div id="right_bar">
@@ -367,22 +431,7 @@ router.get('/star/', (req, res) => {
   res.redirect(req.headers.referer || '/');
 });
 
-router.get('/import/', (req, res) => {
-  const user = getDefaultUser();
-  const body = `
-    <div id="main_column">
-      <p><b>Import Bookmarks from JSON</b></p>
-      <p>Supports Pinboard export format (<code>posts</code> array) or a plain array of bookmarks.</p>
-      <form action="/import/" method="post" enctype="multipart/form-data">
-        <p><input type="file" name="file" accept=".json,application/json"></p>
-        <p>or paste JSON:</p>
-        <textarea name="json" rows="12" style="width:100%"></textarea><br><br>
-        <input type="submit" value="import">
-      </form>
-      <p><a href="/sample/bookmarks.json">Download sample JSON</a></p>
-    </div>`;
-  renderPage(res, { title: 'Import', body, user });
-});
+router.get('/import/', (req, res) => res.redirect('/settings/import/'));
 
 router.post('/import/', upload.single('file'), express.urlencoded({ extended: true, limit: '50mb' }), (req, res) => {
   const user = getDefaultUser();
@@ -398,27 +447,199 @@ router.post('/import/', upload.single('file'), express.urlencoded({ extended: tr
   } catch (e) {
     return res.status(400).send('Invalid JSON: ' + e.message);
   }
-
   const result = importFromJson(user.id, data);
-  res.redirect(`/?imported=${result.imported}&skipped=${result.skipped}`);
+  res.redirect(`/settings/import/?imported=${result.imported}&skipped=${result.skipped}`);
 });
 
-router.get('/settings/', (req, res) => {
+router.get('/settings/', (req, res) => res.redirect('/settings/account/'));
+
+router.get('/settings/account/', (req, res) => {
+  const user = getDefaultUser();
+  const total = countBookmarks(user.id);
+  const body = `
+    <p><b>Account</b></p>
+    <table class="settings_table">
+      <tr><td class="settings_label">username</td><td>${escapeHtml(user.username)}</td></tr>
+      <tr><td class="settings_label">bookmarks</td><td>${total}</td></tr>
+      <tr><td class="settings_label">member since</td><td>${formatWhen(user.created_at)}</td></tr>
+    </table>
+    <form class="settings_form" action="/settings/account/" method="post" style="margin-top:20px">
+      <p><label>change username</label><br>
+      <input type="text" name="username" value="${escapeHtml(user.username)}" maxlength="50"></p>
+      <p><input type="submit" value="save"></p>
+    </form>`;
+  renderSettingsPage(res, { title: 'Account', tab: 'account', body, user });
+});
+
+router.post('/settings/account/', express.urlencoded({ extended: true }), (req, res) => {
+  const user = getDefaultUser();
+  const username = (req.body.username || '').trim();
+  if (username) {
+    try {
+      updateUserSettings(user.id, { username });
+    } catch (e) {
+      // username taken
+    }
+  }
+  res.redirect('/settings/account/');
+});
+
+router.get('/settings/privacy/', (req, res) => {
   const user = getDefaultUser();
   const body = `
-    <div id="main_column">
-      <p><b>Settings</b></p>
-      <table>
-        <tr><td>Username</td><td>${escapeHtml(user.username)}</td></tr>
-        <tr><td>API Token</td><td><code>${escapeHtml(user.api_token)}</code></td></tr>
-        <tr><td>Auth Token</td><td><code>${escapeHtml(user.username)}:${escapeHtml(user.api_token)}</code></td></tr>
-        <tr><td>Secret Key</td><td><code>${escapeHtml(user.secret_key)}</code></td></tr>
-      </table>
-      <p style="margin-top:20px">Use the auth token for API requests:</p>
-      <pre>curl "http://localhost:3000/api/v1/posts/all?auth_token=${escapeHtml(user.username)}:${escapeHtml(user.api_token)}&format=json"</pre>
-      <p><a href="/api/docs">Full API documentation</a></p>
+    <p><b>Privacy</b></p>
+    <p>Control the default visibility of your bookmarks.</p>
+    <form class="settings_form" action="/settings/privacy/" method="post">
+      <p>
+        <label>
+          <input type="checkbox" name="default_private" value="yes" ${user.default_private ? 'checked' : ''}>
+          Save all new bookmarks as private by default
+        </label>
+      </p>
+      <p>
+        <label>
+          <input type="checkbox" name="privacy_lock" value="yes" ${user.privacy_lock ? 'checked' : ''}>
+          Privacy lock &mdash; hide private bookmarks from the web interface
+        </label>
+      </p>
+      <p><input type="submit" value="save"></p>
+    </form>`;
+  renderSettingsPage(res, { title: 'Privacy', tab: 'privacy', body, user });
+});
+
+router.post('/settings/privacy/', express.urlencoded({ extended: true }), (req, res) => {
+  const user = getDefaultUser();
+  updateUserSettings(user.id, {
+    default_private: req.body.default_private === 'yes',
+    privacy_lock: req.body.privacy_lock === 'yes',
+  });
+  res.redirect('/settings/privacy/');
+});
+
+router.get('/settings/import/', (req, res) => {
+  const user = getDefaultUser();
+  const imported = req.query.imported;
+  const skipped = req.query.skipped;
+  const notice = imported
+    ? `<p class="settings_notice">Imported ${escapeHtml(imported)} bookmarks${skipped ? ` (${escapeHtml(skipped)} skipped)` : ''}.</p>`
+    : '';
+
+  const body = `
+    <p><b>Import Bookmarks</b></p>
+    <p>Import your existing bookmarks from a JSON file. Pinboard export format and plain arrays are supported. Tags are preserved; private bookmarks stay private.</p>
+    ${notice}
+    <form class="settings_form" action="/settings/import/" method="post" enctype="multipart/form-data">
+      <p><label>choose file</label><br>
+      <input type="file" name="file" accept=".json,application/json"></p>
+      <p><label>or paste JSON</label><br>
+      <textarea name="json" rows="12" placeholder='{"posts": [{"href": "...", "description": "...", "tag": "..."}]}'></textarea></p>
+      <p><input type="submit" value="import"></p>
+    </form>
+    <p><a href="/sample/bookmarks.json">download sample JSON</a></p>`;
+  renderSettingsPage(res, { title: 'Import', tab: 'import', body, user });
+});
+
+router.post('/settings/import/', upload.single('file'), express.urlencoded({ extended: true, limit: '50mb' }), (req, res) => {
+  const user = getDefaultUser();
+  let data;
+  try {
+    if (req.file) {
+      data = JSON.parse(req.file.buffer.toString('utf8'));
+    } else if (req.body.json) {
+      data = JSON.parse(req.body.json);
+    } else {
+      return res.status(400).send('No JSON provided');
+    }
+  } catch (e) {
+    return res.status(400).send('Invalid JSON: ' + e.message);
+  }
+
+  const result = importFromJson(user.id, data);
+  res.redirect(`/settings/import/?imported=${result.imported}&skipped=${result.skipped}`);
+});
+
+router.get('/settings/export/', (req, res) => {
+  if (req.query.format) {
+    const user = getDefaultUser();
+    const exported = exportBookmarks(user.id, req.query.format);
+    if (!exported) return res.status(400).send('Unknown format');
+    res.setHeader('Content-Type', exported.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${exported.filename}"`);
+    return res.send(exported.body);
+  }
+
+  const user = getDefaultUser();
+  const total = countBookmarks(user.id);
+  const body = `
+    <p><b>Export Bookmarks</b></p>
+    <p>Download a copy of all ${total} bookmarks. You can also export using the API for automated backups.</p>
+    <form class="settings_form" action="/settings/export/" method="get">
+      <p><label>format</label><br>
+      <select name="format">
+        <option value="json">JSON (Pinboard format)</option>
+        <option value="xml">XML (Pinboard format)</option>
+        <option value="html">Netscape Bookmarks (HTML)</option>
+      </select></p>
+      <p><input type="submit" value="export"></p>
+    </form>
+    <p style="margin-top:20px;color:#888">API export:</p>
+    <pre>curl "http://localhost:3000/api/v1/export?auth_token=${escapeHtml(user.username)}:${escapeHtml(user.api_token)}&format=json" -o pinbook-backup.json</pre>`;
+  renderSettingsPage(res, { title: 'Export', tab: 'export', body, user });
+});
+
+router.get('/settings/api/', (req, res) => {
+  const user = getDefaultUser();
+  const body = `
+    <p><b>Password / API</b></p>
+    <p>Your API token lets you access Pinbook programmatically. Treat it like a password.</p>
+    <table class="settings_table">
+      <tr><td class="settings_label">API token</td><td><code>${escapeHtml(user.api_token)}</code></td></tr>
+      <tr><td class="settings_label">auth token</td><td><code>${escapeHtml(user.username)}:${escapeHtml(user.api_token)}</code></td></tr>
+      <tr><td class="settings_label">secret key</td><td><code>${escapeHtml(user.secret_key)}</code></td></tr>
+    </table>
+    <form class="settings_form" action="/settings/api/regenerate" method="post" style="margin-top:20px" onsubmit="return confirm('Regenerate API token? Existing integrations will stop working.')">
+      <p><input type="submit" class="reset" value="regenerate api token"></p>
+    </form>
+    <p style="margin-top:20px">Example:</p>
+    <pre>curl "http://localhost:3000/api/v1/posts/all?auth_token=${escapeHtml(user.username)}:${escapeHtml(user.api_token)}&format=json"</pre>
+    <p><a href="/api/docs">full API documentation</a></p>`;
+  renderSettingsPage(res, { title: 'API', tab: 'api', body, user });
+});
+
+router.post('/settings/api/regenerate', express.urlencoded({ extended: true }), (req, res) => {
+  const user = getDefaultUser();
+  regenerateApiToken(user.id);
+  res.redirect('/settings/api/');
+});
+
+router.get('/settings/danger/', (req, res) => {
+  const user = getDefaultUser();
+  const total = countBookmarks(user.id);
+  const deleted = req.query.deleted ? '<p class="settings_notice">All bookmarks have been deleted.</p>' : '';
+  const body = `
+    <p><b>Danger Zone</b></p>
+    ${deleted}
+    <p class="settings_warning">These actions are permanent and cannot be undone.</p>
+    <div class="settings_danger_box">
+      <p><b>Delete all bookmarks</b></p>
+      <p>Permanently remove all ${total} bookmarks from your account. Tags will also be cleared.</p>
+      ${total > 0 ? `
+      <form class="settings_form" action="/settings/danger/delete-all" method="post" onsubmit="return confirm('Delete ALL ${total} bookmarks? This cannot be undone.')">
+        <p><label>Type <b>DELETE</b> to confirm:</label><br>
+        <input type="text" name="confirm" autocomplete="off" required pattern="DELETE" title="Type DELETE to confirm"></p>
+        <p><input type="submit" class="reset" value="delete all bookmarks"></p>
+      </form>` : '<p><i>No bookmarks to delete.</i></p>'}
     </div>`;
-  renderPage(res, { title: 'Settings', body, user });
+  renderSettingsPage(res, { title: 'Danger Zone', tab: 'danger', body, user });
+});
+
+router.post('/settings/danger/delete-all', express.urlencoded({ extended: true }), (req, res) => {
+  const user = getDefaultUser();
+  if (req.body.confirm !== 'DELETE') {
+    return res.redirect('/settings/danger/?error=confirm');
+  }
+  deleteAllBookmarks(user.id);
+  res.redirect('/settings/danger/?deleted=1');
 });
 
 router.get('/api/docs', (req, res) => {
@@ -447,6 +668,8 @@ router.get('/api/docs', (req, res) => {
         <li><code>POST /api/v1/bookmarks</code> — create bookmark (JSON body)</li>
         <li><code>DELETE /api/v1/bookmarks?url=</code> — delete bookmark</li>
         <li><code>POST /api/v1/import</code> — bulk import JSON</li>
+        <li><code>GET /api/v1/export?format=json|xml|html</code> — export all bookmarks</li>
+        <li><code>DELETE /api/v1/bookmarks/all</code> — delete all bookmarks</li>
       </ul>
       <h3>Integration alternatives</h3>
       <ul>

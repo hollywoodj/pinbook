@@ -13,6 +13,7 @@ const {
   renameTag,
   deleteTag,
   importFromJson,
+  exportBookmarks,
 } = require('../lib/db');
 
 const router = express.Router();
@@ -315,6 +316,21 @@ router.delete('/bookmarks', (req, res) => {
 router.post('/import', express.json({ limit: '50mb' }), (req, res) => {
   const result = importFromJson(req.user.id, req.body);
   res.json(result);
+});
+
+router.get('/export', (req, res) => {
+  const format = req.query.format || 'json';
+  const exported = exportBookmarks(req.user.id, format);
+  if (!exported) return res.status(400).json({ error: 'unknown format' });
+  res.setHeader('Content-Type', exported.contentType);
+  res.setHeader('Content-Disposition', `attachment; filename="${exported.filename}"`);
+  res.send(exported.body);
+});
+
+router.delete('/bookmarks/all', (req, res) => {
+  const { deleteAllBookmarks } = require('../lib/db');
+  const count = deleteAllBookmarks(req.user.id);
+  res.json({ deleted: count });
 });
 
 function escapeXml(str) {
