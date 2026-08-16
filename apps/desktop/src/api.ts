@@ -202,4 +202,31 @@ export const api = {
     if (!res.ok) throw new Error("Upload failed");
     return res.json();
   },
+
+  importEnex: async (
+    file: File,
+    options?: { notebookId?: string; notebookName?: string }
+  ) => {
+    const qs = new URLSearchParams();
+    if (options?.notebookId) qs.set("notebook_id", options.notebookId);
+    if (options?.notebookName) qs.set("notebook_name", options.notebookName);
+    const query = qs.toString();
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(
+      `${API_BASE}/api/v1/import/enex${query ? `?${query}` : ""}`,
+      { method: "POST", body: form }
+    );
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || "Import failed");
+    }
+    return res.json() as Promise<{
+      imported: number;
+      skipped: number;
+      notebook_id: string;
+      notebook_name: string;
+      errors: { index: number; message: string }[];
+    }>;
+  },
 };

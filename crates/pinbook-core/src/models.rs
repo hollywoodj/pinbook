@@ -186,3 +186,26 @@ pub struct HealthResponse {
     pub version: String,
     pub database: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnexImportRequest {
+    pub notebook_id: Option<Uuid>,
+    pub notebook_name: Option<String>,
+    pub stack_id: Option<Uuid>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnexImportResult {
+    pub imported: u32,
+    pub skipped: u32,
+    pub notebook_id: Uuid,
+    pub notebook_name: String,
+    pub errors: Vec<ImportError>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImportError {
+    pub index: usize,
+    pub title: Option<String>,
+    pub message: String,
+}

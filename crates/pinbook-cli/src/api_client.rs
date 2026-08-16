@@ -4,8 +4,8 @@ use std::path::Path;
 use anyhow::{bail, Context, Result};
 use pinbook_core::{
     Attachment, CreateNotebookRequest, CreateNoteRequest, CreateStackRequest, CreateTagRequest,
-    HealthResponse, Note, NoteRevision, NoteSummary, Notebook, SearchQuery, SearchResult, Stack,
-    Tag, UpdateNoteRequest,
+    EnexImportRequest, EnexImportResult, HealthResponse, Note, NoteRevision, NoteSummary,
+    Notebook, SearchQuery, SearchResult, Stack, Tag, UpdateNoteRequest,
 };
 use uuid::Uuid;
 
@@ -298,6 +298,67 @@ impl ApiClient {
         self.delete(&format!("/api/v1/shortcuts/{note_id}"))?;
         println!("Shortcut removed for {note_id}");
         Ok(())
+    }
+
+    pub fn import_enex(
+        &self,
+        path: &Path,
+        options: EnexImportRequest,
+        json_out: bool,
+    ) -> Result<()> {
+        let data = std::fs::read(path)?;
+        let boundary = "pinbookboundary";
+        let filename = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("import.enex");
+
+        let mut query = Vec::new();
+        if let Some(id) = options.notebook_id {
+            query.push(format!("notebook_id={id}"));
+        }
+        if let Some(name) = &options.notebook_name {
+            query.push(format!("notebook_name={}", urlencoding(name)));
+        }
+        if let Some(stack) = options.stack_id {
+            query.push(format!("stack_id={stack}"));
+        }
+        let query_str = if query.is_empty() {
+            String::new()
+        } else {
+            format!("?{}", query.join("&"))
+        };
+
+        let mut body = Vec::new();
+        body.extend_from_slice(format!("--{boundary}\r\n").as_bytes());
+        body.extend_from_slice(
+            format!("Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n")
+                .as_bytes(),
+        );
+        body.extend_from_slice(b"Content-Type: application/xml\r\n\r\n");
+        body.extend_from_slice(&data);
+        body.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
+
+        let resp = ureq::post(&format!(
+            "{}/api/v1/import/enex{query_str}",
+            self.base
+        ))
+        .set(
+            "Content-Type",
+            &format!("multipart/form-data; boundary={boundary}"),
+        )
+        .send_bytes(&body)?;
+
+        let result: EnexImportResult = resp.into_json()?;
+        print_json_or(result, json_out, |r| {
+            println!(
+                "Imported {} notes into '{}' ({} skipped)",
+                r.imported, r.notebook_name, r.skipped
+            );
+            for err in &r.errors {
+                println!("  error[{}]: {}", err.index, err.message);
+            }
+        })
     }
 }
 

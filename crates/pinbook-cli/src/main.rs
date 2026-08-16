@@ -7,7 +7,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use pinbook_core::{
     CreateNotebookRequest, CreateNoteRequest, CreateStackRequest, CreateTagRequest, Database,
-    PinbookService, SearchQuery, UpdateNoteRequest,
+    EnexImportRequest, PinbookService, SearchQuery, UpdateNoteRequest,
 };
 use uuid::Uuid;
 
@@ -75,6 +75,26 @@ enum Commands {
     Shortcut {
         #[command(subcommand)]
         action: ShortcutAction,
+    },
+    /// Import notes from external formats
+    Import {
+        #[command(subcommand)]
+        action: ImportAction,
+    },
+}
+
+#[derive(Subcommand)]
+enum ImportAction {
+    /// Import notes from an Evernote ENEX export file
+    Enex {
+        /// Path to .enex file (or directory of .enex files)
+        path: PathBuf,
+        #[arg(long)]
+        notebook: Option<Uuid>,
+        #[arg(long)]
+        notebook_name: Option<String>,
+        #[arg(long)]
+        stack: Option<Uuid>,
     },
 }
 
@@ -207,6 +227,7 @@ fn run_local(cli: &Cli, service: &PinbookService, json_out: bool) -> Result<()> 
         ),
         Commands::Trash { action } => local::trash(service, action, json_out),
         Commands::Shortcut { action } => local::shortcut(service, action, json_out),
+        Commands::Import { action } => local::import(service, action, json_out),
     }
 }
 
@@ -324,6 +345,22 @@ fn run_api(cli: &Cli, client: &ApiClient, json_out: bool) -> Result<()> {
             ShortcutAction::List => client.list_shortcuts(json_out),
             ShortcutAction::Add { note_id } => client.add_shortcut(*note_id, json_out),
             ShortcutAction::Remove { note_id } => client.remove_shortcut(*note_id),
+        },
+        Commands::Import { action } => match action {
+            ImportAction::Enex {
+                path,
+                notebook,
+                notebook_name,
+                stack,
+            } => client.import_enex(
+                path,
+                EnexImportRequest {
+                    notebook_id: *notebook,
+                    notebook_name: notebook_name.clone(),
+                    stack_id: *stack,
+                },
+                json_out,
+            ),
         },
     }
 }

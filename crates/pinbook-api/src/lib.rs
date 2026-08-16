@@ -11,7 +11,8 @@ use axum::{
 };
 use pinbook_core::{
     CreateNotebookRequest, CreateNoteRequest, CreateStackRequest, CreateTagRequest, Database,
-    HealthResponse, PinbookService, SearchQuery, UpdateNoteRequest, UpdateNotebookRequest,
+    EnexImportRequest, HealthResponse, PinbookService, SearchQuery, UpdateNoteRequest,
+    UpdateNotebookRequest,
 };
 use serde::Deserialize;
 use tokio::sync::Mutex;
@@ -119,6 +120,7 @@ fn build_router(state: AppState) -> Router {
         .route("/api/v1/shortcuts/:note_id", delete(remove_shortcut))
         .route("/api/v1/search", get(search))
         .route("/api/v1/trash/empty", post(empty_trash))
+        .route("/api/v1/import/enex", post(import_enex))
         .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any).allow_headers(Any))
         .layer(TraceLayer::new_for_http())
         .with_state(state)
@@ -460,6 +462,47 @@ async fn empty_trash(State(state): State<AppState>) -> Result<Json<serde_json::V
     let svc = state.service.lock().await;
     let count = svc.empty_trash()?;
     Ok(Json(serde_json::json!({ "deleted": count })))
+}
+
+#[derive(Debug, Deserialize)]
+struct ImportEnexQuery {
+    notebook_id: Option<Uuid>,
+    notebook_name: Option<String>,
+    stack_id: Option<Uuid>,
+}
+
+async fn import_enex(
+    State(state): State<AppState>,
+    Query(q): Query<ImportEnexQuery>,
+    mut multipart: Multipart,
+) -> Result<Json<pinbook_core::EnexImportResult>, AppError> {
+    let mut data = Vec::new();
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|e| AppError::bad_request(e.to_string()))?
+    {
+        if field.name() == Some("file") {
+            data = field
+                .bytes()
+                .await
+                .map_err(|e| AppError::bad_request(e.to_string()))?
+                .to_vec();
+            break;
+        }
+    }
+    if data.is_empty() {
+        return Err(AppError::bad_request("missing file field".into()));
+    }
+    let svc = state.service.lock().await;
+    Ok(Json(svc.import_enex(
+        &data,
+        EnexImportRequest {
+            notebook_id: q.notebook_id,
+            notebook_name: q.notebook_name,
+            stack_id: q.stack_id,
+        },
+    )?))
 }
 
 struct AppError(pinbook_core::PinbookError);

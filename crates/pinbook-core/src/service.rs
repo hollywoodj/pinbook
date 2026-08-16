@@ -246,8 +246,8 @@ impl PinbookService {
                 id: Uuid::parse_str(&row.get::<_, String>(0)?).unwrap(),
                 user_id: Uuid::parse_str(&row.get::<_, String>(1)?).unwrap(),
                 name: row.get(2)?,
-                created_at: Self::parse_dt(&row.get::<_, String>(4)?).unwrap(),
-                updated_at: Self::parse_dt(&row.get::<_, String>(5)?).unwrap(),
+                created_at: Self::parse_dt(&row.get::<_, String>(3)?).unwrap(),
+                updated_at: Self::parse_dt(&row.get::<_, String>(4)?).unwrap(),
             })
         })?;
         rows.collect::<std::result::Result<Vec<_>, _>>()
@@ -276,8 +276,8 @@ impl PinbookService {
                         id: Uuid::parse_str(&row.get::<_, String>(0)?).unwrap(),
                         user_id: Uuid::parse_str(&row.get::<_, String>(1)?).unwrap(),
                         name: row.get(2)?,
-                        created_at: Self::parse_dt(&row.get::<_, String>(4)?).unwrap(),
-                        updated_at: Self::parse_dt(&row.get::<_, String>(5)?).unwrap(),
+                        created_at: Self::parse_dt(&row.get::<_, String>(3)?).unwrap(),
+                        updated_at: Self::parse_dt(&row.get::<_, String>(4)?).unwrap(),
                     })
                 },
             )

@@ -390,3 +390,9 @@ button {
 .pin {
   margin-right: 4px;
 }
+
+.import-status {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}

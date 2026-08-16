@@ -1,13 +1,65 @@
 use anyhow::Result;
 use pinbook_core::{
     CreateNotebookRequest, CreateStackRequest, CreateTagRequest, CreateNoteRequest, PinbookService,
-    SearchQuery, UpdateNoteRequest,
+    EnexImportRequest, EnexImportResult, SearchQuery, UpdateNoteRequest,
 };
 use uuid::Uuid;
 
 use crate::{
-    NotebookAction, NoteAction, ShortcutAction, StackAction, TagAction, TrashAction,
+    ImportAction, NotebookAction, NoteAction, ShortcutAction, StackAction, TagAction, TrashAction,
 };
+
+pub fn import(service: &PinbookService, action: &ImportAction, json_out: bool) -> Result<()> {
+    match action {
+        ImportAction::Enex {
+            path,
+            notebook,
+            notebook_name,
+            stack,
+        } => {
+            let options = EnexImportRequest {
+                notebook_id: *notebook,
+                notebook_name: notebook_name.clone(),
+                stack_id: *stack,
+            };
+            let results = if path.is_dir() {
+                let mut combined: Option<EnexImportResult> = None;
+                for entry in std::fs::read_dir(path)? {
+                    let entry = entry?;
+                    let file_path = entry.path();
+                    if file_path.extension().and_then(|s| s.to_str()) == Some("enex") {
+                        let result = service.import_enex_file(&file_path, options.clone())?;
+                        combined = Some(match combined {
+                            Some(mut acc) => {
+                                acc.imported += result.imported;
+                                acc.skipped += result.skipped;
+                                acc.errors.extend(result.errors);
+                                acc
+                            }
+                            None => result,
+                        });
+                    }
+                }
+                combined.ok_or_else(|| anyhow::anyhow!("no .enex files found in directory"))?
+            } else {
+                service.import_enex_file(path, options)?
+            };
+
+            if json_out {
+                println!("{}", serde_json::to_string_pretty(&results)?);
+            } else {
+                println!(
+                    "Imported {} notes into '{}' ({} skipped)",
+                    results.imported, results.notebook_name, results.skipped
+                );
+                for err in &results.errors {
+                    println!("  error[{}]: {}", err.index, err.message);
+                }
+            }
+        }
+    }
+    Ok(())
+}
 
 pub fn print_info(service: &PinbookService, json_out: bool) -> Result<()> {
     let path = service

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   api,
   Note,
@@ -33,6 +33,8 @@ export default function App() {
   const [showNewNotebook, setShowNewNotebook] = useState(false);
   const [showNewTag, setShowNewTag] = useState(false);
   const [newName, setNewName] = useState("");
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
   const defaultNotebook = useMemo(
     () => notebooks.find((n) => n.is_default) || notebooks[0],
@@ -288,7 +290,47 @@ export default function App() {
           >
             Trash
           </button>
+
+          <div className="nav-section">
+            <div className="nav-section-title">
+              <span>Import</span>
+            </div>
+            <button className="nav-item indent" onClick={() => importRef.current?.click()}>
+              Import Evernote (.enex)
+            </button>
+            {importStatus && <div className="import-status">{importStatus}</div>}
+          </div>
         </nav>
+        <input
+          ref={importRef}
+          type="file"
+          accept=".enex,application/xml,text/xml"
+          hidden
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (!file) return;
+            try {
+              setImportStatus("Importing…");
+              const result = await api.importEnex(file, {
+                notebookName: file.name.replace(/\.enex$/i, ""),
+              });
+              setImportStatus(
+                `Imported ${result.imported} notes into "${result.notebook_name}"` +
+                  (result.skipped ? ` (${result.skipped} skipped)` : "")
+              );
+              await refreshMeta();
+              await refreshNotes();
+              setFilter({
+                type: "notebook",
+                id: result.notebook_id,
+                name: result.notebook_name,
+              });
+            } catch (err) {
+              setImportStatus(err instanceof Error ? err.message : "Import failed");
+            }
+          }}
+        />
       </aside>
 
       <section className="note-list-panel">
