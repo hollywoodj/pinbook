@@ -51,9 +51,9 @@ function renderPage(res, { title, body, user, activeNav }) {
       <a href="/" class="banner_username">${escapeHtml(user.username)}</a>
     </div>
     <div id="top_menu">
-      <a href="/">bookmarks</a> &middot;
-      <a href="/add/">add</a> &middot;
-      <a href="/settings/">settings</a> &middot;
+      <a href="/">bookmarks</a><span class="menu_sep">&middot;</span>
+      <a href="/add/">add</a><span class="menu_sep">&middot;</span>
+      <a href="/settings/">settings</a><span class="menu_sep">&middot;</span>
       <a href="/api/docs">api</a>
     </div>
   </div>
@@ -100,9 +100,9 @@ function renderSettingsPage(res, { title, tab, body, user }) {
       <a href="/" class="banner_username">${escapeHtml(user.username)}</a>
     </div>
     <div id="top_menu">
-      <a href="/">bookmarks</a> &middot;
-      <a href="/add/">add</a> &middot;
-      <a href="/settings/">settings</a> &middot;
+      <a href="/">bookmarks</a><span class="menu_sep">&middot;</span>
+      <a href="/add/">add</a><span class="menu_sep">&middot;</span>
+      <a href="/settings/">settings</a><span class="menu_sep">&middot;</span>
       <a href="/api/docs">api</a>
     </div>
   </div>

@@ -29,10 +29,18 @@ a:hover {
   background: #FEFEFE;
   border-bottom: 1px solid #C0C0C0;
   min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  overflow: hidden;
 }
 
 #logo {
-  display: inline-block;
+  display: flex;
+  align-items: baseline;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 #logo a:not(.banner_username) {
@@ -40,6 +48,7 @@ a:hover {
   font-weight: 900;
   color: #333 !important;
   text-decoration: none;
+  line-height: 1;
 }
 
 #logo span {
@@ -52,20 +61,33 @@ a:hover {
   color: #222 !important;
   font-weight: 900;
   text-decoration: none;
+  font-size: 13px;
 }
 
 #top_menu {
-  float: right;
-  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  gap: 6px;
+  margin: 0;
+  line-height: 1;
 }
 
 #top_menu a {
   color: #666;
   text-decoration: none;
+  display: inline;
+  white-space: nowrap;
 }
 
 #top_menu a:hover {
   color: #222;
+}
+
+#top_menu .menu_sep {
+  color: #C0C0C0;
+  user-select: none;
 }
 
 /* Content layout */
