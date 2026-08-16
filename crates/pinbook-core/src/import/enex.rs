@@ -408,6 +408,12 @@ mod tests {
     }
 
     #[test]
+    fn parses_evernote_datetime() {
+        let dt = parse_evernote_datetime("20240115T100000Z").unwrap();
+        assert_eq!(dt.format("%Y-%m-%d").to_string(), "2024-01-15");
+    }
+
+    #[test]
     fn imports_enex_into_database() {
         let dir = std::env::temp_dir().join("pinbook-import-test");
         let _ = std::fs::remove_dir_all(&dir);

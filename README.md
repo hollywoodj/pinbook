@@ -206,6 +206,47 @@ See `crates/pinbook-core/migrations/001_initial.sql` for the full schema. Core t
 - `notes_fts` (FTS5 virtual table)
 - `attachments`, `note_revisions`, `shortcuts`
 
+## Import from Evernote
+
+Evernote exports notes as **ENEX** files (XML). Pinbook imports these directly.
+
+### Export from Evernote
+
+In Evernote desktop: select notes or a notebook → **File → Export Notes** → save as `.enex`.
+
+### CLI
+
+```bash
+pinbook import enex ~/Downloads/MyNotebook.enex
+pinbook import enex export.enex --notebook-name "Work Archive"
+pinbook import enex ~/EvernoteExports/          # directory of .enex files
+pinbook --api http://127.0.0.1:8787 import enex export.enex
+```
+
+### API
+
+```bash
+curl -X POST "http://127.0.0.1:8787/api/v1/import/enex?notebook_name=Imported" \
+  -F "file=@MyNotebook.enex"
+```
+
+### Desktop
+
+Use **Import Evernote (.enex)** in the sidebar.
+
+### Import mapping
+
+| Evernote | Pinbook |
+|----------|---------|
+| Title, ENML body | Note title + HTML content |
+| Tags | Tags (flat) |
+| Created / updated | Preserved |
+| Images & files | Inline images + attachments |
+| Source URL, reminders | Preserved when present |
+| Notebook structure | One Pinbook notebook per ENEX file |
+| Encrypted notes | Placeholder (cannot decrypt) |
+| Note links | Not preserved |
+
 ## iOS roadmap
 
 The desktop app embeds the same API used by external clients. A future iOS app can:
