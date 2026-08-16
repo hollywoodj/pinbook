@@ -1,0 +1,55 @@
+name: Pinbook CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build workspace
+        run: cargo build --workspace --release
+      - name: Smoke test API + CLI
+        run: |
+          ./target/release/pinbook-api &
+          API_PID=$!
+          sleep 2
+          ./target/release/pinbook --api http://127.0.0.1:8787 info
+          ./target/release/pinbook --api http://127.0.0.1:8787 notebook list
+          kill $API_PID
+
+  build-desktop-macos:
+    runs-on: macos-latest
+    needs: test-rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install desktop deps
+        working-directory: apps/desktop
+        run: npm install
+      - name: Build Tauri app (macOS)
+        working-directory: apps/desktop
+        run: npm run tauri build
+
+  build-desktop-windows:
+    runs-on: windows-latest
+    needs: test-rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install desktop deps
+        working-directory: apps/desktop
+        run: npm install
+      - name: Build Tauri app (Windows)
+        working-directory: apps/desktop
+        run: npm run tauri build

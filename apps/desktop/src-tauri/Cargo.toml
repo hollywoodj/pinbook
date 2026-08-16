@@ -1,0 +1,27 @@
+[package]
+name = "pinbook-desktop"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "pinbook_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+anyhow.workspace = true
+dirs.workspace = true
+pinbook-api = { path = "../../../crates/pinbook-api" }
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

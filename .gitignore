@@ -1,0 +1,13 @@
+/target/
+**/.DS_Store
+node_modules/
+dist/
+*.db
+*.db-*
+attachments/
+.env
+.idea/
+.vscode/
+*.log
+.cargo/
+.rustup/
