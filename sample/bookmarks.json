@@ -71,6 +71,204 @@
       "time": "2024-08-01T13:55:00Z",
       "shared": "yes",
       "toread": "no"
+    },
+    {
+      "href": "https://nodejs.org/",
+      "description": "Node.js",
+      "extended": "JavaScript runtime built on Chrome's V8 engine",
+      "tag": "nodejs programming tools",
+      "time": "2024-08-12T09:00:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://css-tricks.com/",
+      "description": "CSS-Tricks",
+      "extended": "Tips, tricks, and techniques on using CSS",
+      "tag": "webdev css reference",
+      "time": "2024-08-20T15:10:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://www.w3.org/TR/html5/",
+      "description": "HTML5 Specification",
+      "extended": "A vocabulary and associated APIs for HTML and XHTML",
+      "tag": "webdev reference documentation",
+      "time": "2024-09-01T11:22:00Z",
+      "shared": "yes",
+      "toread": "yes"
+    },
+    {
+      "href": "https://daringfireball.net/",
+      "description": "Daring Fireball",
+      "extended": "John Gruber's site, home of Markdown",
+      "tag": "writing essays macos",
+      "time": "2024-09-08T18:40:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://json.org/",
+      "description": "Introducing JSON",
+      "extended": "The JSON data interchange format",
+      "tag": "reference programming",
+      "time": "2024-09-14T07:05:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://www.rfc-editor.org/rfc/rfc3986",
+      "description": "RFC 3986: URI Generic Syntax",
+      "extended": "Uniform Resource Identifier specification",
+      "tag": "reference documentation webdev",
+      "time": "2024-09-22T13:18:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://archive.org/",
+      "description": "Internet Archive",
+      "extended": "A non-profit library of millions of free texts, movies, and websites",
+      "tag": "tools reference archives",
+      "time": "2024-10-03T16:00:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://owasp.org/www-project-top-ten/",
+      "description": "OWASP Top Ten",
+      "extended": "The most critical web application security risks",
+      "tag": "security webdev reference",
+      "time": "2024-10-11T10:45:00Z",
+      "shared": "no",
+      "toread": "yes"
+    },
+    {
+      "href": "https://www.sqlite.org/whentouse.html",
+      "description": "Appropriate Uses For SQLite",
+      "extended": "When SQLite is a good fit, and when it is not",
+      "tag": "database sqlite tools",
+      "time": "2024-10-18T12:12:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://developer.mozilla.org/en-US/docs/Web/RSS",
+      "description": "MDN: RSS",
+      "extended": "Really Simple Syndication overview",
+      "tag": "webdev reference documentation",
+      "time": "2024-10-25T08:30:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://en.wikipedia.org/wiki/Social_bookmarking",
+      "description": "Social bookmarking - Wikipedia",
+      "extended": "History and design of social bookmarking services",
+      "tag": "bookmarks reference",
+      "time": "2024-11-02T19:20:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://maciej.ceglowski.com/",
+      "description": "Idle Words",
+      "extended": "Essays by Maciej Cegłowski",
+      "tag": "essays writing",
+      "time": "2024-11-09T14:00:00Z",
+      "shared": "yes",
+      "toread": "yes"
+    },
+    {
+      "href": "https://httpwg.org/specs/rfc9110.html",
+      "description": "RFC 9110: HTTP Semantics",
+      "extended": "HTTP semantics specification",
+      "tag": "webdev reference documentation",
+      "time": "2024-11-16T09:40:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://www.w3.org/WAI/WCAG21/quickref/",
+      "description": "How to Meet WCAG (Quick Reference)",
+      "extended": "A customizable overview of Web Content Accessibility Guidelines",
+      "tag": "webdev accessibility reference",
+      "time": "2024-11-22T11:11:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://crontab.guru/",
+      "description": "crontab guru",
+      "extended": "Quick and simple editor for cron schedule expressions",
+      "tag": "tools reference",
+      "time": "2024-12-01T06:55:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://regexr.com/",
+      "description": "RegExr",
+      "extended": "Online regex editor and tester",
+      "tag": "tools programming",
+      "time": "2024-12-08T17:25:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://caniuse.com/",
+      "description": "Can I use",
+      "extended": "Browser support tables for modern web technologies",
+      "tag": "webdev tools reference",
+      "time": "2024-12-15T13:05:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://www.unicode.org/charts/",
+      "description": "Unicode Character Code Charts",
+      "extended": "Official Unicode code charts",
+      "tag": "reference documentation",
+      "time": "2025-01-04T10:00:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://example.com/private-notes",
+      "description": "Private scratch notes",
+      "extended": "A private bookmark used to check the grey box treatment",
+      "tag": ".secret notes",
+      "time": "2025-01-12T21:15:00Z",
+      "shared": "no",
+      "toread": "no"
+    },
+    {
+      "href": "https://www.w3.org/Style/CSS/current-work",
+      "description": "CSS current work",
+      "extended": "CSS specifications in development",
+      "tag": "css webdev",
+      "time": "2025-02-02T08:08:00Z",
+      "shared": "yes",
+      "toread": "yes"
+    },
+    {
+      "href": "https://commonmark.org/",
+      "description": "CommonMark",
+      "extended": "A strongly defined, highly compatible specification of Markdown",
+      "tag": "writing reference tools",
+      "time": "2025-02-18T12:45:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://htmx.org/",
+      "description": "htmx",
+      "extended": "High power tools for HTML",
+      "tag": "webdev javascript tools",
+      "time": "2025-03-01T16:30:00Z",
+      "shared": "yes",
+      "toread": "yes"
     }
   ]
 }
