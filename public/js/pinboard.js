@@ -84,22 +84,35 @@
   });
 
   const fetchTitle = document.getElementById('fetch_title');
+  const urlField = document.getElementById('url');
+  const titleField = document.getElementById('title_field');
+
+  function loadTitle(force) {
+    if (!urlField || !urlField.value) return;
+    if (!force && titleField && titleField.value.trim()) return;
+    if (fetchTitle) fetchTitle.textContent = 'fetching…';
+    fetch('/fetch-title/?url=' + encodeURIComponent(urlField.value))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.title && titleField && (force || !titleField.value.trim())) {
+          titleField.value = data.title;
+        }
+        if (fetchTitle) fetchTitle.textContent = 'fetch title';
+      })
+      .catch(function () {
+        if (fetchTitle) fetchTitle.textContent = 'fetch title';
+      });
+  }
+
   if (fetchTitle) {
     fetchTitle.addEventListener('click', function (e) {
       e.preventDefault();
-      const url = document.getElementById('url');
-      const title = document.getElementById('title_field');
-      if (!url || !url.value) return;
-      fetchTitle.textContent = 'fetching…';
-      fetch('/fetch-title/?url=' + encodeURIComponent(url.value))
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data.title && title) title.value = data.title;
-          fetchTitle.textContent = 'fetch title';
-        })
-        .catch(function () {
-          fetchTitle.textContent = 'fetch title';
-        });
+      loadTitle(true);
+    });
+  }
+  if (urlField) {
+    urlField.addEventListener('blur', function () {
+      loadTitle(false);
     });
   }
 

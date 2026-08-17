@@ -97,10 +97,14 @@ function buildQuery(state, overrides = {}) {
   return qs ? `/?${qs}` : '/';
 }
 
-function renderBanner(user) {
+function renderBanner(user, activeNav) {
   const lock = user.privacy_lock
     ? ' <span id="privacy_lock" title="privacy lock is on">&#128274;</span>'
     : '';
+  const item = (href, key, label) => {
+    const cls = activeNav === key ? ' class="nav_active"' : '';
+    return `<a href="${href}"${cls}>${label}</a>`;
+  };
   return `
   <div id="banner">
     <table id="banner_table" cellpadding="0" cellspacing="0" width="100%">
@@ -111,31 +115,50 @@ function renderBanner(user) {
           <a href="/" class="banner_username">${escapeHtml(user.username)}</a>${lock}
         </td>
         <td id="top_menu">
-          <a href="/">bookmarks</a><span class="menu_sep"> · </span><a href="/add/">add</a><span class="menu_sep"> · </span><a href="/tools/">tools</a><span class="menu_sep"> · </span><a href="/settings/">settings</a><span class="menu_sep"> · </span><a href="/api/docs">api</a>
+          ${item('/', 'bookmarks', 'bookmarks')}<span class="menu_sep"> · </span>${item('/add/', 'add', 'add')}<span class="menu_sep"> · </span>${item('/tools/', 'tools', 'tools')}<span class="menu_sep"> · </span>${item('/settings/', 'settings', 'settings')}<span class="menu_sep"> · </span>${item('/api/docs', 'api', 'api')}
         </td>
       </tr>
     </table>
   </div>`;
 }
 
-function renderPage(res, { title, body, user }) {
+function renderPage(res, { title, body, user, activeNav, compact }) {
+  if (compact) {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(title)} - Pinbook</title>
+  <link rel="stylesheet" href="/css/pinboard.css?v=5">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body class="popup${user.privacy_lock ? ' privacy_lock' : ''}">
+  <div id="content">
+    ${body}
+  </div>
+  <script src="/js/pinboard.js?v=2"></script>
+</body>
+</html>`;
+    return res.send(html);
+  }
+
   const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(title)} - Pinbook</title>
-  <link rel="stylesheet" href="/css/pinboard.css?v=4">
+  <link rel="stylesheet" href="/css/pinboard.css?v=5">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
-<body class="${user.privacy_lock ? 'privacy_lock' : ''}">
-  ${renderBanner(user)}
+<body${user.privacy_lock ? ' class="privacy_lock"' : ''}>
+  ${renderBanner(user, activeNav)}
   <div id="content">
     ${body}
   </div>
   <div id="footer">
     <p>Pinbook &mdash; local Pinboard clone</p>
   </div>
-  <script src="/js/pinboard.js?v=1"></script>
+  <script src="/js/pinboard.js?v=2"></script>
 </body>
 </html>`;
   res.send(html);
@@ -163,11 +186,11 @@ function renderSettingsPage(res, { title, tab, body, user }) {
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(title)} - Pinbook</title>
-  <link rel="stylesheet" href="/css/pinboard.css?v=4">
+  <link rel="stylesheet" href="/css/pinboard.css?v=5">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
-<body class="${user.privacy_lock ? 'privacy_lock' : ''}">
-  ${renderBanner(user)}
+<body${user.privacy_lock ? ' class="privacy_lock"' : ''}>
+  ${renderBanner(user, 'settings')}
   <div id="content">
     <div id="settings_layout">
       <div id="settings_sidebar">
@@ -182,7 +205,7 @@ function renderSettingsPage(res, { title, tab, body, user }) {
   <div id="footer">
     <p>Pinbook &mdash; local Pinboard clone</p>
   </div>
-  <script src="/js/pinboard.js?v=1"></script>
+  <script src="/js/pinboard.js?v=2"></script>
 </body>
 </html>`;
   res.send(html);
@@ -253,8 +276,8 @@ function renderTagCloud(allTags, ctx) {
   const countLinks = countModes
     .map((m) => {
       const selected = !isCloud && mode === m.key;
-      const cls = selected ? 'tag_heading_selected' : '';
-      return `<a class="${cls}" href="${buildQuery(ctx, { tagMode: m.key })}">${m.label}</a>`;
+      const cls = selected ? ' class="tag_heading_selected"' : '';
+      return `<a${cls} href="${buildQuery(ctx, { tagMode: m.key })}">${m.label}</a>`;
     })
     .join(' ');
 
@@ -264,8 +287,8 @@ function renderTagCloud(allTags, ctx) {
   ]
     .map((m) => {
       const selected = m.label === 'cloud' ? isCloud : !isCloud;
-      const cls = selected ? 'tag_heading_selected' : '';
-      return `<a class="${cls}" href="${buildQuery(ctx, { tagMode: m.key })}">${m.label}</a>`;
+      const cls = selected ? ' class="tag_heading_selected"' : '';
+      return `<a${cls} href="${buildQuery(ctx, { tagMode: m.key })}">${m.label}</a>`;
     })
     .join(' ');
 
@@ -467,16 +490,16 @@ router.get('/', (req, res) => {
         &nbsp;
         sort:
         <span id="sort_order_picker">
-          <a class="${state.sort === 'created_at' ? 'sort_selected' : ''}" href="${buildQuery(ctx, { sort: 'created_at', page: 1 })}">date</a>
+          <a${state.sort === 'created_at' ? ' class="sort_selected"' : ''} href="${buildQuery(ctx, { sort: 'created_at', page: 1 })}">date</a>
           &middot;
-          <a class="${state.sort === 'description' ? 'sort_selected' : ''}" href="${buildQuery(ctx, { sort: 'description', page: 1 })}">title</a>
+          <a${state.sort === 'description' ? ' class="sort_selected"' : ''} href="${buildQuery(ctx, { sort: 'description', page: 1 })}">title</a>
         </span>
         &nbsp;
         <a class="edit" id="bulk_edit" href="${buildQuery(ctx, { bulk: !state.bulk, page: state.bulk ? 1 : page })}">${state.bulk ? 'done' : 'edit'}</a>
       </p>
       <form id="bulk_form" action="/bulk/" method="post">
         ${bulkBar}
-        <div id="bookmarks" class="${state.bulk ? 'bulk_mode' : ''}">
+        <div id="bookmarks"${state.bulk ? ' class="bulk_mode"' : ''}>
           ${bookmarkHtml || empty}
         </div>
       </form>
@@ -502,7 +525,7 @@ router.get('/', (req, res) => {
     : state.tags.length
       ? state.tags.join(' + ')
       : `${filteredCount} bookmarks`;
-  renderPage(res, { title, body, user });
+  renderPage(res, { title, body, user, activeNav: 'bookmarks' });
 });
 
 router.get('/add/', (req, res) => {
@@ -548,7 +571,7 @@ router.get('/add/', (req, res) => {
         </td></tr></tbody></table>
       </form>
     </div>`;
-  renderPage(res, { title: 'Add Bookmark', body, user });
+  renderPage(res, { title: 'Add Bookmark', body, user, activeNav: 'add', compact: popup });
 });
 
 router.post('/add/', express.urlencoded({ extended: true }), (req, res) => {
@@ -770,7 +793,7 @@ router.get('/tools/', (req, res) => {
         <li><a href="/rss/?filter=starred">starred RSS</a></li>
       </ul>
     </div>`;
-  renderPage(res, { title: 'Tools', body, user });
+  renderPage(res, { title: 'Tools', body, user, activeNav: 'tools' });
 });
 
 router.get('/unread/oldest', (req, res) => {
@@ -1107,7 +1130,7 @@ router.get('/api/docs', (req, res) => {
       </ul>
       <p>Your token: <code>${escapeHtml(user.username)}:${escapeHtml(user.api_token)}</code></p>
     </div>`;
-  renderPage(res, { title: 'API Docs', body, user });
+  renderPage(res, { title: 'API Docs', body, user, activeNav: 'api' });
 });
 
 router.get('/sample/bookmarks.json', (req, res) => {

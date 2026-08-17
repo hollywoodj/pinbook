@@ -85,6 +85,22 @@ a:hover {
   color: #222;
 }
 
+#top_menu a.nav_active {
+  color: #222;
+  font-weight: 900;
+}
+
+body.popup #content {
+  padding: 16px 20px;
+}
+
+body.popup #main_column {
+  float: none;
+  width: auto;
+  max-width: 640px;
+  padding-right: 0;
+}
+
 #top_menu .menu_sep {
   color: #C0C0C0;
   display: inline;
@@ -387,6 +403,7 @@ a.edit:after,
 
 /* Search */
 #search_query_field {
+  display: block;
   width: 250px;
   padding: 8px 7px;
   border: 1px solid #bbb;
@@ -395,6 +412,7 @@ a.edit:after,
 }
 
 .search_button {
+  display: block;
   margin-top: 8px;
 }
 
@@ -757,13 +775,25 @@ a.next_prev:hover {
 
 #bulk_bar {
   margin: 8px 0 16px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: #f7f7f7;
   border: 1px solid #ddd;
+  font-size: 13px;
 }
 
 #bulk_bar p {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
+}
+
+#bulk_bar input[type="text"] {
+  width: 140px;
+  padding: 4px 6px;
+}
+
+#bulk_bar input[type="submit"] {
+  padding: 4px 10px;
+  margin: 0 4px 0 0;
+  font-size: 12px;
 }
 
 .bookmark.kb_current {
