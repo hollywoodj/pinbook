@@ -1,0 +1,76 @@
+{
+  "posts": [
+    {
+      "href": "https://pinboard.in/",
+      "description": "Pinboard",
+      "extended": "Social bookmarking for introverts",
+      "tag": "bookmarks tools reference",
+      "time": "2024-01-15T10:30:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://news.ycombinator.com/",
+      "description": "Hacker News",
+      "extended": "Tech news and discussion",
+      "tag": "news tech programming",
+      "time": "2024-02-20T14:22:00Z",
+      "shared": "yes",
+      "toread": "yes"
+    },
+    {
+      "href": "https://developer.mozilla.org/en-US/docs/Web",
+      "description": "MDN Web Docs",
+      "extended": "Resources for developers, by developers",
+      "tag": "webdev reference documentation",
+      "time": "2024-03-10T08:15:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://sqlite.org/index.html",
+      "description": "SQLite",
+      "extended": "Small, fast, self-contained SQL database engine",
+      "tag": "database tools",
+      "time": "2024-04-05T16:45:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://expressjs.com/",
+      "description": "Express - Node.js web framework",
+      "extended": "Fast, unopinionated, minimalist web framework for Node.js",
+      "tag": "nodejs webdev tools",
+      "time": "2024-05-12T11:00:00Z",
+      "shared": "no",
+      "toread": "no"
+    },
+    {
+      "href": "https://www.paulgraham.com/articles.html",
+      "description": "Paul Graham Essays",
+      "extended": "Essays on startups, programming, and life",
+      "tag": "essays startups writing",
+      "time": "2024-06-18T20:30:00Z",
+      "shared": "yes",
+      "toread": "yes"
+    },
+    {
+      "href": "https://lobste.rs/",
+      "description": "Lobsters",
+      "extended": "Computing-focused community",
+      "tag": "news tech community",
+      "time": "2024-07-22T09:10:00Z",
+      "shared": "yes",
+      "toread": "no"
+    },
+    {
+      "href": "https://github.com/",
+      "description": "GitHub",
+      "extended": "Where the world builds software",
+      "tag": "tools programming git",
+      "time": "2024-08-01T13:55:00Z",
+      "shared": "yes",
+      "toread": "no"
+    }
+  ]
+}
